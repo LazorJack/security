@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +22,7 @@ import java.util.Set;
  * Created by jacklazorchak on 2/7/17.
  */
 @Service
+@Transactional
 public class UserService implements UserDetailsService {
 
     private final static Logger log = LoggerFactory.getLogger(UserService.class);
@@ -60,9 +62,9 @@ public class UserService implements UserDetailsService {
 
         Role role;
         if(isAdmin) {
-            role = findRoleByName(Constants.ADMIN);
+            role = getRoleByName(Constants.ADMIN);
         } else {
-            role = findRoleByName(Constants.USER);
+            role = getRoleByName(Constants.USER);
         }
         Set<Role> roles = new HashSet<>();
         roles.add(role);
@@ -87,7 +89,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username);
     }
 
-    private Role findRoleByName(String name) {
+    public Role getRoleByName(String name) {
         return roleRepository.findByName(name);
     }
 
@@ -104,15 +106,27 @@ public class UserService implements UserDetailsService {
 
     @PostConstruct
     private void initialize() {
-        Role admin = findRoleByName(Constants.ADMIN);
+        createRolesIfNecessary();
+        createAdmin();
+    }
+
+    private void createRolesIfNecessary() {
+        Role admin = getRoleByName(Constants.ADMIN);
         if(admin == null) {
             log.info("Creating admin role");
             createRole(new Role(Constants.ADMIN, Constants.ADMIN));
         }
-        Role user = findRoleByName(Constants.USER);
+        Role user = getRoleByName(Constants.USER);
         if(user == null) {
             log.info("Creating user role");
             createRole(new Role(Constants.USER, Constants.USER));
         }
     }
+
+    private void createAdmin() {
+        if(getByUsername(Constants.ADMIN_USERNAME) == null) {
+            create(new User(Constants.ADMIN_USERNAME, Constants.ADMIN_PASSWORD), true);
+        }
+    }
+
 }
