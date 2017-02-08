@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: LazorJackSecurity
+  datasource:
+    url: jdbc:mysql://localhost:3306/security
+    username: chilluser
+    password: password
+    driverClassName: com.mysql.jdbc.Driver
+    testWhileIdle: true
+    validationQuery: SELECT 1
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+      naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+
+server:
+  port: 8080
